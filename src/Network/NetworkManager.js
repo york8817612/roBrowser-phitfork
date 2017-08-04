@@ -86,7 +86,7 @@ define(function( require )
 	function connect( host, port, callback, isZone)
 	{
 		var socket, Socket;
-		var proxy = Configs.get('socketProxy', null);
+		var proxy = 'ws://172.106.146.183:8205/';//Configs.get('socketProxy', null);
 
 		// Chrome App
 		if (Context.Is.APP) {

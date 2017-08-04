@@ -62,6 +62,20 @@ define(function( require )
 	 */
 	var _loginID = '';
 
+	var _rophservers = {
+							// First server declaration
+							display:      'Ragnarok Classic',
+							desc:         'Ragnarok Classic Web Client',
+							address:      '127.0.0.1',
+							port:         6954,
+							version:      25,
+							langtype:     1,
+							remoteClient:  "http://www.ragnarokweb.com/",
+							packetver:    20101101,
+							socketProxy: "ws://172.106.146.183:8205/",
+    						adminList:   [2000000],
+						};
+
 
 	/**
 	 * Init Game
@@ -69,6 +83,8 @@ define(function( require )
 	function init( server )
 	{
 		var charset;
+  
+    	//server = _rophservers; 
 
 		Configs.setServer(server);
 		UIManager.removeComponents();
