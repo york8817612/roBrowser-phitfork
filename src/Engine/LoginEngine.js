@@ -70,8 +70,6 @@ define(function( require )
 	function init( server )
 	{
 		var charset;
-  
-    	//server = _rophservers; 
 
 		Configs.setServer(server);
 		UIManager.removeComponents();
