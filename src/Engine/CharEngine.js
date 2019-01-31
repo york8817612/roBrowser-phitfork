@@ -28,7 +28,11 @@ define(function( require )
 	var UIManager  = require('UI/UIManager');
 	var Background = require('UI/Background');
 	var CharSelect = require('UI/Components/CharSelect/CharSelect');
-	var CharCreate = require('UI/Components/CharCreate/CharCreate');
+    var CharSelect2 = require('UI/Components/CharSelect2/CharSelect2');
+    var CharSelectV2 = require('UI/Components/CharSelectV2/CharSelectV2');
+    var CharSelectV3 = require('UI/Components/CharSelectV3/CharSelectV3');
+    var CharCreate = require('UI/Components/CharCreate/CharCreate');
+    var PincodeWindow = require('UI/Components/PincodeWindow/PincodeWindow');
 	var InputBox   = require('UI/Components/InputBox/InputBox');
 	var getModule  = require;
 
@@ -43,6 +47,11 @@ define(function( require )
 	 * @var {number} where to create character ?
 	 */
 	var _creationSlot = 0;
+
+    /**
+	 * @var {number} Select Character UI
+	 */
+    var charSelectNum = 2;
 
 
 	/*
@@ -89,7 +98,13 @@ define(function( require )
 		Network.hookPacket( PACKET.HC.NOTIFY_ZONESVR,                onReceiveMapInfo );
 		Network.hookPacket( PACKET.HC.ACCEPT_ENTER_NEO_UNION_HEADER, onConnectionAccepted );
 		Network.hookPacket( PACKET.HC.ACCEPT_ENTER_NEO_UNION_LIST,   onConnectionAccepted );
-		Network.hookPacket( PACKET.HC.NOTIFY_ACCESSIBLE_MAPNAME,     onMapUnavailable);
+        Network.hookPacket( PACKET.HC.NOTIFY_ACCESSIBLE_MAPNAME,     onMapUnavailable);
+        Network.hookPacket(PACKET.HC.SECOND_PASSWD_LOGIN, onPincodeCheckSuccess);
+
+        // change Select Character Window
+        if (PACKETVER.value == 20180530) {
+            charSelectNum = 2;
+        }
 	}
 
 
@@ -138,13 +153,45 @@ define(function( require )
 
 		UIManager.getComponent('WinLoading').remove();
 
-		// Initialize window
-		CharSelect.onExitRequest    = onExitRequest;
-		CharSelect.onConnectRequest = onConnectRequest;
-		CharSelect.onCreateRequest  = onCreateRequest;
-		CharSelect.onDeleteRequest  = onDeleteRequest;
-		CharSelect.append();
-		CharSelect.setInfo( pkt );
+        // Initialize window
+        switch (charSelectNum)
+        {
+            case 1:
+                CharSelect2.onExitRequest = onExitRequest;
+                CharSelect2.onConnectRequest = onConnectRequest;
+                CharSelect2.onCreateRequest = onCreateRequest;
+                CharSelect2.onDeleteRequest = onDeleteRequest;
+                CharSelect2.append();
+                CharSelect2.setInfo(pkt);
+                break;
+            case 2:
+                CharSelectV2.onExitRequest = onExitRequest;
+                CharSelectV2.onConnectRequest = onConnectRequest;
+                CharSelectV2.onCreateRequest = onCreateRequest;
+                CharSelectV2.onDeleteRequest = onDeleteRequest;
+                CharSelectV2.append();
+                CharSelectV2.setInfo(pkt);
+                //PincodeWindow.onExitRequest = onExitRequest;
+                //PincodeWindow.onPincodeCheckRequest = onPincodeCheckRequest;
+                //PincodeWindow.append();
+                break;
+            case 3:
+                CharSelectV3.onExitRequest = onExitRequest;
+                CharSelectV3.onConnectRequest = onConnectRequest;
+                CharSelectV3.onCreateRequest = onCreateRequest;
+                CharSelectV3.onDeleteRequest = onDeleteRequest;
+                CharSelectV3.append();
+                CharSelectV3.setInfo(pkt);
+                break;
+            default:
+                CharSelect.onExitRequest = onExitRequest;
+                CharSelect.onConnectRequest = onConnectRequest;
+                CharSelect.onCreateRequest = onCreateRequest;
+                CharSelect.onDeleteRequest = onDeleteRequest;
+                CharSelect.append();
+                CharSelect.setInfo(pkt);
+                break;
+        }        
 	}
 
 
@@ -176,8 +223,22 @@ define(function( require )
 	{
 		// no map server avaiable
 		UIManager.showMessageBox( DB.getMessage(1811), null, function(){
-			UIManager.getComponent('WinLoading').remove();
-			CharSelect.append();
+            UIManager.getComponent('WinLoading').remove();
+            switch (charSelectNum)
+            {
+                case 1:
+                    CharSelect2.append();
+                    break;
+                case 2:
+                    CharSelectV2.append();
+                    break;
+                case 3:
+                    CharSelectV3.append();
+                    break;
+                default:
+                    CharSelect.append();
+                    break;
+            }
 		});
 	}
 
@@ -297,7 +358,21 @@ define(function( require )
 	function onDeleteAnswer(pkt)
 	{
 		var result = typeof( pkt.ErrorCode ) === 'undefined' ? -1 : pkt.ErrorCode;
-		CharSelect.deleteAnswer(result);
+        
+        switch (charSelectNum) {
+            case 1:
+                CharSelect2.deleteAnswer(result);
+                break;
+            case 2:
+                CharSelectV2.deleteAnswer(result);
+                break;
+            case 3:
+                CharSelectV3.deleteAnswer(result);
+                break;
+            default:
+                CharSelect.deleteAnswer(result);
+                break;
+        }
 	}
 
 
@@ -308,13 +383,40 @@ define(function( require )
 	 */
 	function onCreateRequest( index )
 	{
-		_creationSlot = index;
-		CharSelect.remove();
+        _creationSlot = index;
+
+        switch (charSelectNum) {
+            case 1:
+                CharSelect2.remove();
+                break;
+            case 2:
+                CharSelectV2.remove();
+                break;
+            case 3:
+                CharSelectV3.remove();
+                break;
+            default:
+                CharSelect.remove();
+                break;
+        }
 		CharCreate.setAccountSex( Session.Sex );
 		CharCreate.onCharCreationRequest = onCharCreationRequest;
 		CharCreate.onExitRequest = function(){
 			CharCreate.remove();
-			CharSelect.append();
+            switch (charSelectNum) {
+                case 1:
+                    CharSelect2.append();
+                    break;
+                case 2:
+                    CharSelectV2.append();
+                    break;
+                case 3:
+                    CharSelectV3.append();
+                    break;
+                default:
+                    CharSelect.append();
+                    break;
+            }
 		};
 		CharCreate.append();
 	}
@@ -367,9 +469,25 @@ define(function( require )
 	 */
 	function onCreationSuccess( pkt )
 	{
-		CharCreate.remove();
-		CharSelect.addCharacter( pkt.charinfo );
-		CharSelect.append();
+        CharCreate.remove();
+        switch (charSelectNum) {
+            case 1:
+                CharSelect2.addCharacter(pkt.charinfo);
+                CharSelect2.append();
+                break;
+            case 2:
+                CharSelectV2.addCharacter(pkt.charinfo);
+                CharSelectV2.append();
+                break;
+            case 3:
+                CharSelectV3.addCharacter(pkt.charinfo);
+                CharSelectV3.append();
+                break;
+            default:
+                CharSelect.addCharacter(pkt.charinfo);
+                CharSelect.append();
+                break;
+        }
 	}
 
 
@@ -392,7 +510,22 @@ define(function( require )
 		}
 
 		UIManager.showMessageBox( DB.getMessage(msg_id), 'ok' );
-	}
+    }
+
+    function onPincodeCheckRequest(pincode)
+    {
+        var pkt;
+
+        pkt = new PACKET.CH.PINCODE_CHECK();
+        pkt.AID = Session.AID;
+        pkt.PINCODE = pincode;
+
+        Network.sendPacket(pkt);
+    }
+
+    function onPincodeCheckSuccess(pkt) {
+        PincodeWindow.remove();
+    }
 
 
 	/**
@@ -405,7 +538,20 @@ define(function( require )
 		// Play sound
 		Sound.play('\xB9\xF6\xC6\xB0\xBC\xD2\xB8\xAE.wav');
 
-		CharSelect.remove();
+        switch (charSelectNum) {
+            case 1:
+                CharSelect2.remove();
+                break;
+            case 2:
+                CharSelectV2.remove();
+                break;
+            case 3:
+                CharSelectV3.remove();
+                break;
+            default:
+                CharSelect.remove();
+                break;
+        }
 		UIManager.getComponent('WinLoading').append();
 		Session.Character = entity;
 

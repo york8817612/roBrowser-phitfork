@@ -203,8 +203,9 @@ define(function( require )
 	 * Update head
 	 *
 	 * @param {number} head index
+     * 
 	 */
-	function UpdateHead( head )
+	function UpdateHead( head, job )
 	{
 		var path;
 
@@ -213,7 +214,7 @@ define(function( require )
 		}
 
 		this._head  = head;
-		path        = DB.getHeadPath( head, this._sex );
+		path        = DB.getHeadPath( head, this.job, this._sex );
 
 		Client.loadFile(path + '.act');
 		Client.loadFile(path + '.spr', function(){
@@ -245,7 +246,7 @@ define(function( require )
 			return;
 		}
 
-		this.files.head.pal = DB.getHeadPalPath( this._head, this._headpalette, this._sex);
+		this.files.head.pal = DB.getHeadPalPath( this._head, this._headpalette, this.job, this._sex);
 	}
 
 

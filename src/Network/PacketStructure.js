@@ -4423,6 +4423,53 @@ define(['Utils/BinaryWriter', './PacketVerManager'], function(BinaryWriter, PACK
 		pkt.view.setUint32(ver[3], this.AID, true);
 	};
 
+    // 0x8b8
+    PACKET.CH.PINCODE_CHECK = function PACKET_CH_PINCODE_CHECK() {
+        this.AID = '';
+        this.PINCODE = '';
+    };
+    PACKET.CH.PINCODE_CHECK.prototype.build = function () {
+        var pkt_len = 2 + 4 + 4;
+        var pkt_buf = new BinaryWriter(pkt_len);
+
+        pkt_buf.writeShort(0x8b8);
+        pkt_buf.writeULong(this.AID);
+        pkt_buf.writeString(this.PINCODE, 4);
+        return pkt_buf;
+    };
+
+    // 0x8be
+    PACKET.CH.PINCODE_CHANGE = function PACKET_CH_PINCODE_CHANGE() {
+        this.AID = '';
+        this.OLD_PINCODE = '';
+        this.NEW_PINCODE = '';
+    };
+    PACKET.CH.PINCODE_CHANGE.prototype.build = function () {
+        var pkt_len = 2 + 4 + 4 + 4;
+        var pkt_buf = new BinaryWriter(pkt_len);
+
+        pkt_buf.writeShort(0x8c5);
+        pkt_buf.view.setUint32(pkt_buf[3], this.AID, true);
+        pkt_buf.writeString(this.OLD_PINCODE, 4);
+        pkt_buf.writeString(this.NEW_PINCODE, 4);
+        return pkt_buf;
+    };
+
+    // 0x8ba
+    PACKET.CH.PINCODE_FIRST_PIN = function PACKET_CH_PINCODE_FIRST_PIN() {
+        this.AID = '';
+        this.PINCODE = '';
+    };
+    PACKET.CH.PINCODE_FIRST_PIN.prototype.build = function () {
+        var pkt_len = 2 + 4 + 4;
+        var pkt_buf = new BinaryWriter(pkt_len);
+
+        pkt_buf.writeShort(0x8c5);
+        pkt_buf.view.setUint32(pkt_buf[3], this.AID, true);
+        pkt_buf.writeString(this.PINCODE, 4);
+        return pkt_buf;
+    };
+
 	// 0x970
 	PACKET.CH.MAKE_CHAR2 = function PACKET_CH_MAKE_CHAR2() {
 		this.name = '';
@@ -10201,6 +10248,19 @@ define(['Utils/BinaryWriter', './PacketVerManager'], function(BinaryWriter, PACK
 		this.dummy1_beginbilling = fp.readChar();
 		this.code = fp.readChar();
 		fp.seek(20, SEEK_CUR);
+
+        fp.readULong(); // 6b 00 XX XX
+
+        if (PACKETVER.value >= 20100413) {
+            this.TotalSlotNum = fp.readUChar();
+            this.PremiumStartSlot = fp.readUChar();
+            this.PremiumEndSlot = fp.readUChar();
+        }
+        this.dummy1_beginbilling = fp.readChar();
+        this.code = fp.readULong();
+        this.time1 = fp.readULong();
+        this.time2 = fp.readULong();
+        this.dummy2_endbilling = fp.readBinaryString(7);
 		this.charInfo = PACKETVER.parseCharInfo(fp, end);
 	};
 	PACKET.HC.ACCEPT_ENTER_NEO_UNION_HEADER.size = -1;
@@ -10447,6 +10507,13 @@ define(['Utils/BinaryWriter', './PacketVerManager'], function(BinaryWriter, PACK
 	};
 	PACKET.ZC.EQUIPWIN_MICROSCOPE2.size = -1;
 
+    // 0x8b9
+    PACKET.HC.SECOND_PASSWD_LOGIN = function PACKET_HC_SECOND_PASSWD_LOGIN(fp, end) {
+        this.pincode_seed = fp.readULong();
+        this.AID = fp.readULong();
+        this.state = fp.readShort();
+    };
+    PACKET.HC.SECOND_PASSWD_LOGIN.size = -1;
 
 	// 0x8c7
 	PACKET.ZC.SKILL_ENTRY3 = function PACKET_ZC_SKILL_ENTRY3(fp, end) {
@@ -11309,6 +11376,44 @@ define(['Utils/BinaryWriter', './PacketVerManager'], function(BinaryWriter, PACK
 	};
 	PACKET.ZC.ACCEPT_ENTER3.size = 14;
 
+    // 0xac4
+    PACKET.AC.ACCEPT_LOGIN3 = function PACKET_AC_ACCEPT_LOGIN3(fp, end) {
+        this.AuthCode = fp.readLong();
+        this.AID = fp.readULong();
+        this.userLevel = fp.readULong();
+        this.lastLoginIP = fp.readULong();
+        this.lastLoginTime = fp.readBinaryString(24);
+        fp.readUShort(); // unknown
+        this.Sex = fp.readUChar();
+
+        if (PACKETVER.value >= 20170315) {
+            fp.readBinaryString(17);
+        }
+        var pkt_len = 32;
+
+        if (PACKETVER.value >= 20170315) {
+            pkt_len = 160;
+        }
+
+        this.ServerList = (function () {
+            var i, count = (end - fp.tell()) / pkt_len | 0, out = new Array(count);
+            for (i = 0; i < count; ++i) {
+                out[i] = {};
+                out[i].ip = fp.readULong();
+                out[i].port = fp.readUShort();
+                out[i].name = fp.readString(20);
+                out[i].usercount = fp.readUShort();
+                out[i].state = fp.readUShort();
+                out[i].property = fp.readUShort();
+
+                if (PACKETVER.value >= 20170315) {
+                    fp.readBinaryString(128);
+                }
+            }
+            return out;
+        })();
+    };
+    PACKET.AC.ACCEPT_LOGIN3.size = -1;
 
 	/**
 	 * Export

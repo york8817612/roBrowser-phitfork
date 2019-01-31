@@ -237,6 +237,9 @@ define(function()
 		KAGEROU:            4211,
 		OBORO:              4212,
 		FROG_KAGEROU:       4213,
-		FROG_OBORO:         4214,
-	};
+        FROG_OBORO:         4214,
+
+        SUMMONER:           4218,
+        SUMMONER_B:         4220,
+    };
 });

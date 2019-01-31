@@ -97,7 +97,12 @@ define(['Core/Configs'], function( Configs )
 			blockSize += 2;
 		}
 
-		return blockSize;
+        if (_value >= 20170830) {
+            blockSize += 4; // base_exp
+            blockSize += 4; // job_exp
+        }
+
+        return blockSize;
 	}
 
 
@@ -125,7 +130,7 @@ define(['Core/Configs'], function( Configs )
 		if (!blockSize || length % blockSize) {
 			console.error('CHARACTER_INFO size error!! blockSize : "'+ blockSize +'", list length: ' + length + ', auto-detect...');
 
-			var knownSize = [106, 108, 112, 116, 124, 128, 132, 136, 140, 144, 145, 147];
+			var knownSize = [106, 108, 112, 116, 124, 128, 132, 136, 140, 144, 145, 147, 155];
 			var matches = [];
 
 			for (i = 0, count = knownSize.length; i < count; ++i) {
@@ -146,9 +151,15 @@ define(['Core/Configs'], function( Configs )
 		for (i = 0, count = length / blockSize; i < count; ++i) {
 			out[i] = {};
 			out[i].GID = fp.readULong();
-			out[i].exp = fp.readLong();
+            out[i].exp = fp.readLong();
+			if (_value >= 20170830) {
+            	fp.readLong();
+			}
 			out[i].money = fp.readLong();
-			out[i].jobexp = fp.readLong();
+            out[i].jobexp = fp.readLong();
+            if (_value >= 20170830) {
+				fp.readLong();
+			}
 			out[i].joblevel = fp.readLong();
 			out[i].bodyState = fp.readLong();
 			out[i].healthState = fp.readLong();

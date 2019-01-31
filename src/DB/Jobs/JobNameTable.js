@@ -88,6 +88,7 @@ define(["./JobConst"], function( JobId )
 	JobNameTable[JobId.ROYAL_GUARD2]     = "\xB1\xD7\xB8\xAE\xC6\xF9\xB0\xA1\xB5\xE5";
 	JobNameTable[JobId.RANGER2]          = "\xB7\xB9\xC0\xCE\xC1\xAE\xB4\xC1\xB4\xEB";
 	JobNameTable[JobId.MECHANIC2]        = "\xB8\xB6\xB5\xB5\xB1\xE2\xBE\xEE";
+    JobNameTable[JobId.SUMMONER]         = "summoner";
 
 	//SUPERNOVICE2 : 4190,
 	//SUPERNOVICE2_B : 4191,
@@ -127,6 +128,7 @@ define(["./JobConst"], function( JobId )
 	duplicateEntry(JobId.ALCHEMIST,        JobId.ALCHEMIST_B);
 	duplicateEntry(JobId.BARD,             JobId.BARD_B);
 	duplicateEntry(JobId.DANCER,           JobId.DANCER_B);
+    duplicateEntry(JobId.SUMMONER,         JobId.SUMMONER_B);
 
 	duplicateEntry(JobId.RUNE_KNIGHT,      JobId.RUNE_KNIGHT_H,      JobId.RUNE_KNIGHT_B);
 	duplicateEntry(JobId.RUNE_KNIGHT2,     JobId.RUNE_KNIGHT2_H,     JobId.RUNE_KNIGHT2_B);

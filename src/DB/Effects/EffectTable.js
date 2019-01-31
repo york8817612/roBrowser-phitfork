@@ -1139,7 +1139,8 @@ define(function( require )
 
 		194: [{
 			type: 'STR',
-			file: 'stun',
+            file: 'stun',
+            wav: 'effect/_stun',
 			attachedEntity: true
 		}],
 
